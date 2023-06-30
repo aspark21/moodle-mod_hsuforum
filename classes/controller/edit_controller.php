@@ -228,7 +228,7 @@ class edit_controller extends controller_abstract {
             $timestart = $timestart === 0 ? $discussion->timestart : 0;
             $timeend = $timeend === 0 ? $discussion->timeend : 0;
 
-            return $this->postservice->handle_update_post($course, $cm, $forum, $context, $discussion, $post, $files,  array(
+            return $this->postservice->handle_update_post($course, $cm, $forum, $context, $discussion, $post,  array(
                 'subject'       => $subject,
                 'name'          => $subject,
                 'groupid'       => $groupid,
@@ -239,7 +239,7 @@ class edit_controller extends controller_abstract {
                 'privatereply'  => $privatereply,
                 'timestart'     => $timestart,
                 'timeend'       => $timeend
-            ));
+            ), $files);
         } catch (\Exception $e) {
             return new json_response($e);
         }
@@ -256,7 +256,7 @@ class edit_controller extends controller_abstract {
         $postid = required_param('postid', PARAM_INT);
 
         if (!$post = hsuforum_get_post_full($postid)) {
-            print_error('invalidpostid', 'hsuforum');
+            throw new \moodle_exception('invalidpostid', 'hsuforum');
         }
         $discussion = $DB->get_record('hsuforum_discussions', array('id' => $post->discussion), '*', MUST_EXIST);
 
@@ -306,7 +306,7 @@ class edit_controller extends controller_abstract {
         $candeleteown = ($post->userid == $USER->id && has_capability('mod/hsuforum:deleteownpost', $PAGE->context));
 
         if (!($candeleteown || has_capability('mod/hsuforum:deleteanypost', $PAGE->context))) {
-            print_error('cannotdeletepost', 'hsuforum');
+            throw new \moodle_exception('cannotdeletepost', 'hsuforum');
         }
 
         $redirect = hsuforum_verify_and_delete_post($PAGE->course, $PAGE->cm,

@@ -117,7 +117,7 @@ if ($search) {
 }
 
 if (!$course = $DB->get_record('course', array('id'=>$id))) {
-    print_error('invalidcourseid');
+    throw new \moodle_exception('invalidcourseid');
 }
 
 require_course_login($course);
@@ -161,7 +161,7 @@ $searchform = hsuforum_search_form($course, $forumid, $search);
 
 $PAGE->navbar->add($strsearch, new moodle_url('/mod/hsuforum/search.php', array('id'=>$course->id)));
 $PAGE->navbar->add($strsearchresults);
-if (!$posts = hsuforum_search_posts($searchterms, $course->id, $page*$perpage, $perpage, $totalcount)) {
+if (!$posts = hsuforum_search_posts($searchterms, $totalcount, $course->id, $page*$perpage, $perpage)) {
     $PAGE->set_title($strsearchresults);
     $PAGE->set_heading($course->fullname);
     echo $OUTPUT->header();
@@ -250,14 +250,14 @@ foreach ($posts as $post) {
     // Replace the simple subject with the three items forum name -> thread name -> subject
     // (if all three are appropriate) each as a link.
     if (! $discussion = $DB->get_record('hsuforum_discussions', array('id' => $post->discussion))) {
-        print_error('invaliddiscussionid', 'hsuforum');
+        throw new \moodle_exception('invaliddiscussionid', 'hsuforum');
     }
     if (! $forum = $DB->get_record('hsuforum', array('id' => "$discussion->forum"))) {
-        print_error('invalidforumid', 'hsuforum');
+        throw new \moodle_exception('invalidforumid', 'hsuforum');
     }
 
     if (!$cm = get_coursemodule_from_instance('hsuforum', $forum->id)) {
-        print_error('invalidcoursemodule');
+        throw new \moodle_exception('invalidcoursemodule');
     }
 
     // TODO actually display if the search result has been read, for now just

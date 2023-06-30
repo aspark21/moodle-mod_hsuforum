@@ -117,7 +117,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         $modinfo = get_fast_modinfo($forum->course);
         $forums = $modinfo->get_instances_of('hsuforum');
         if (!isset($forums[$forum->id])) {
-            print_error('invalidcoursemodule');
+            throw new \moodle_exception('invalidcoursemodule');
         }
         $cm = $forums[$forum->id];
 
@@ -128,18 +128,18 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
 
         if ($id) {
             if (! $course = $DB->get_record("course", array("id" => $cm->course))) {
-                print_error('coursemisconf');
+                throw new \moodle_exception('coursemisconf');
             }
         } else if ($f) {
             if (! $course = $DB->get_record("course", array("id" => $forum->course))) {
-                print_error('coursemisconf');
+                throw new \moodle_exception('coursemisconf');
             }
 
             // move require_course_login here to use forced language for course
             // fix for MDL-6926
             require_course_login($course, true, $cm);
         } else {
-            print_error('missingparameter');
+            throw new \moodle_exception('missingparameter');
         }
 
         $context = \context_module::instance($cm->id);
@@ -626,6 +626,12 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         }
 
 
+        $threadcontent = '';
+        if (!$hidethreadcontent) {
+            $threadcontent = '<div class="hsuforum-thread-content" tabindex="0">' . $d->message . '</div>';
+        }
+
+
         $threadheader = <<<HTML
         <div class="hsuforum-thread-header">
             <div class="hsuforum-thread-title">
@@ -639,7 +645,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
 HTML;
 
         return <<<HTML
-<article id="p{$d->postid}" class="hsuforum-thread hsuforum-post-target clearfix" role="article" aria-label="$arialabeldiscussion"
+<article id="p{$d->postid}" class="hsuforum-thread hsuforum-post-target clearfix" role="article" aria-label=""
     data-discussionid="$d->id" data-postid="$d->postid" data-author="$author" data-isdiscussion="true" $attrs>
     <header id="h{$d->postid}" class="clearfix $unreadclass">
         <div class="hsuforum-thread-author">
